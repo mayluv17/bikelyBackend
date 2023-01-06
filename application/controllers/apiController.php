@@ -1,5 +1,3 @@
-<!-- //Added ability to filter out all the trips that less than 10 meters/seconds -->
-<!-- //And pagination so that the frontend can request for specific page, 10 records per-page by default, and frontend can pass a [record_per_page] query string to the end point. -->
 
 <?php
 class ApiController extends Controller {
@@ -36,7 +34,16 @@ class ApiController extends Controller {
 
         if(is_array($trips)){
             $content['success'] = 1;
-            $content['data'] = $trips;
+            $content['total_record'] = $total_record;
+            $content['number_of_page'] = $number_of_page;
+            $content['record_per_page'] = $this->record_per_page;
+
+            foreach ($trips as $trip) {
+                $trip['distance'] = $this->convertToKm($trip['covered_distance']);
+                $trip['time'] = $this->convertToTime($trip['duration']);
+                $data[] = $trip;
+            }
+            $content['data'] = $data;
             echo $this->jason($content);
         }
         else{

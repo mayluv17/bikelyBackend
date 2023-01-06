@@ -36,5 +36,16 @@ class Controller {
 		return(json_encode($r));
 	}
 	
+	 function convertToTime($seconds){
+		$hours = floor($seconds / 3600);
+		$mins = floor($seconds / 60 % 60);
+		$secs = floor($seconds % 60);
+
+		return("{$hours}h {$mins}m {$secs}s");
+	}
+
+	function convertToKm($distance){
+		return(round($distance / 1000, 2) . 'km');
+	} 
 	
 }
