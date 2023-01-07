@@ -51,7 +51,12 @@ class ApiController extends Controller {
 	}
 
     function stations(){
-        
+        $section = @$this->path[0];
+        if($section == 'details'){
+            $this->stationdetails();
+            return;
+        }
+
         $stations = $this->model
         ->select()
         ->table('stations')
@@ -69,6 +74,54 @@ class ApiController extends Controller {
         }
         else{
             echo $this->jason(['error'=>1, 'message'=>'No records found.']);
+        }
+	}
+
+    function stationdetails(){
+        $id = @$this->path[1];
+
+        $station = $this->model
+        ->select([
+            's.*',
+            "(SELECT COUNT(id) FROM trips WHERE departure_station_id='$id') departure_station_total",
+            "(SELECT COUNT(id) FROM trips WHERE return_station_id='$id') return_station_total",
+            "(SELECT AVG(covered_distance) FROM trips WHERE departure_station_id='$id') average_starting",
+            "(SELECT AVG(covered_distance) FROM trips WHERE return_station_id='$id') average_ending"
+        ])
+        ->table('stations s')
+        ->where(['s.id'=>$id])
+        ->result()[0];
+
+        $top_5_return_stations = $this->model
+        ->select(['return_station_id','return_station_name','COUNT(id) total_trips'])
+        ->table('trips')
+        ->where(['departure_station_id'=>$id])
+        ->group('return_station_id')
+        ->order('total_trips DESC')
+        ->limit([0,5])
+        ->result();
+
+        $top_5_departure_stations = $this->model
+        ->select(['departure_station_id','departure_station_name','COUNT(id) total_trips'])
+        ->table('trips')
+        ->where(['return_station_id'=>$id])
+        ->group('departure_station_id')
+        ->order('total_trips DESC')
+        ->limit([0,5])
+        ->result();
+
+        if(is_array($station)){
+            $content['success'] = 1;
+
+            $station['average_starting'] = $this->convertToKm($station['average_starting']);
+            $station['average_ending'] = $this->convertToKm($station['average_ending']);
+            $station['top_5_departure_stations'] = $top_5_departure_stations;
+            $station['top_5_return_stations'] = $top_5_return_stations;
+            $content['data'] = $station;
+            echo $this->jason($content);
+        }
+        else{
+            echo $this->jason(['error'=>1, 'message'=>'No records found for the selected station ID.']);
         }
 	}
 }
