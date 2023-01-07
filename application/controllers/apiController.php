@@ -1,4 +1,3 @@
-
 <?php
 class ApiController extends Controller {
 
@@ -42,6 +41,28 @@ class ApiController extends Controller {
                 $trip['distance'] = $this->convertToKm($trip['covered_distance']);
                 $trip['time'] = $this->convertToTime($trip['duration']);
                 $data[] = $trip;
+            }
+            $content['data'] = $data;
+            echo $this->jason($content);
+        }
+        else{
+            echo $this->jason(['error'=>1, 'message'=>'No records found.']);
+        }
+	}
+
+    function stations(){
+        
+        $stations = $this->model
+        ->select()
+        ->table('stations')
+        ->result();
+
+        if(is_array($stations)){
+            $content['success'] = 1;
+            $content['total_record'] = count($stations);
+
+            foreach ($stations as $station) {
+                $data[] = $station;
             }
             $content['data'] = $data;
             echo $this->jason($content);
