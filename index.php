@@ -1,5 +1,6 @@
 <?php
-ini_set('display_errors', 0);
+// ini_set('display_errors', 0);
+header('Access-Control-Allow-Origin: *');
 
 define('LIB', dirname(__FILE__).'/library');
 define('APP', dirname(__FILE__).'/application');
